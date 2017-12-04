@@ -9,6 +9,9 @@
         ],
         "babel": "inherit"
     },
+    "engines": {
+        "node": ">=8.9.1 <9.0.0"
+    },
     "scripts": {
         "lint": "eslint src/ test/",
         "lint:fix": "eslint --fix src/ test/",
