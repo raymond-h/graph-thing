@@ -6,5 +6,9 @@
     },
     "parserOptions": {
         "sourceType": "module"
+    },
+    "extends": "kellyirc",
+    "rules": {
+        "require-yield": "off"
     }
 }

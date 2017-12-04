@@ -11,17 +11,20 @@
     },
     "scripts": {
         "lint": "eslint src/ test/",
+        "lint:fix": "eslint --fix src/ test/",
         "test": "ava",
         "build": "babel -d lib/ src/",
         "watch:lint": "onchange src/ -- run-s lint",
+        "watch:lint:fix": "onchange src/ -- run-s lint:fix",
         "watch:test": "ava -w",
         "watch:build": "babel -d lib/ src/ -w",
         "watch": "onchange src/ test/ -- run-s lint test build",
         "prepublish": "run-s lint test build",
-        "start:dev": "nodemon --watch src --exec babel-node -- src/index.js"
+        "start:dev": "cross-env NODE_ENV=development PORT=3001 nodemon --watch src --exec babel-node -- src/index.js"
     },
     "dependencies": {
-        "babel-runtime": "^6.26.0"
+        "babel-runtime": "^6.26.0",
+        "koa": "^2.4.1"
     },
     "devDependencies": {
         "ava": "^0.24.0",
@@ -30,7 +33,9 @@
         "babel-plugin-transform-runtime": "^6.23.0",
         "babel-preset-env": "^1.6.1",
         "babel-register": "^6.26.0",
+        "cross-env": "^5.1.1",
         "eslint": "^4.12.1",
+        "eslint-config-kellyirc": "^3.1.0",
         "nodemon": "^1.12.1",
         "npm-run-all": "^4.1.2",
         "onchange": "^3.2.1"
