@@ -20,7 +20,9 @@
         "watch:build": "babel -d lib/ src/ -w",
         "watch": "onchange src/ test/ -- run-s lint test build",
         "prepublish": "run-s lint test build",
-        "start:dev": "cross-env NODE_ENV=development PORT=3001 nodemon --watch src --exec babel-node -- src/index.js"
+        "start:dev": "cross-env NODE_ENV=development PORT=3001 nodemon --watch src --exec babel-node -- src/index.js",
+        "start": "node lib",
+        "heroku-postbuild": "npm install --dev && npm run build"
     },
     "dependencies": {
         "babel-runtime": "^6.26.0",
