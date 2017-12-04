@@ -1,0 +1,8 @@
+{
+	"root": "build/",
+	"proxies": {
+		"/api/": {
+			"origin": "${BACKEND_URL}"
+		}
+	}
+}
