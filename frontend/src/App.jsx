@@ -1,10 +1,13 @@
 import React, { Component } from 'react';
+import io from 'socket.io-client';
+
 import logo from './logo.svg';
 import './App.css';
 
 class App extends Component {
   constructor(props) {
     super(props);
+    this.socket = null;
     this.state = { text: '' };
   }
 
@@ -12,6 +15,14 @@ class App extends Component {
     const res = await fetch('/api/test');
     const text = await res.text();
     this.setState({ text });
+
+    this.socket = io({
+      path: '/api/socket.io'
+    });
+
+    this.socket.on('connect', () => {
+      this.socket.emit('subscribe', 'hurr-durr');
+    });
   }
 
   render() {
