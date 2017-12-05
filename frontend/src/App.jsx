@@ -1,14 +1,63 @@
 import React, { Component } from 'react';
+import Rx from 'rxjs/Rx';
 import io from 'socket.io-client';
 
 import logo from './logo.svg';
 import './App.css';
 
+async function fetchAll(socket, id) {
+  return new Promise(resolve => {
+    socket.emit('fetch', id, resolve);
+  });
+}
+
+async function subscribe(socket, id) {
+  return new Promise(resolve => {
+    socket.emit('subscribe', id, resolve);
+  });
+}
+
+function applyUpdate(data, update) {
+  const out = [...data];
+
+  if(update.old_val == null) {
+    out.push(update.new_val);
+  }
+  else {
+    const idx = out.findIndex(row => row.id === update.old_val.id);
+
+    if(update.new_val == null) {
+      out.splice(idx, 1);
+    }
+    else {
+      out.splice(idx, 1, update.new_val);
+    }
+  }
+
+  return out;
+}
+
+function stateSyncObs(socket, id) {
+  return Rx.Observable.defer(() =>
+    Rx.Observable.from(fetchAll(socket, id))
+    .mergeMap(data =>
+      Rx.Observable.from(subscribe(socket, id))
+      .mapTo(data)
+    )
+    .concatMap(initial =>
+      Rx.Observable.fromEvent(socket, 'update')
+      .scan(applyUpdate, initial)
+      .startWith(initial)
+    )
+  );
+}
+
 class App extends Component {
   constructor(props) {
     super(props);
     this.socket = null;
-    this.state = { text: '' };
+    this.sub = null;
+    this.state = { text: '', data: null };
   }
 
   async componentDidMount() {
@@ -20,9 +69,11 @@ class App extends Component {
       path: '/api/socket.io'
     });
 
-    this.socket.on('connect', () => {
-      this.socket.emit('subscribe', 'hurr-durr');
-    });
+    this.sub =
+      stateSyncObs(this.socket, 'hurr-durr')
+      .subscribe(data => {
+        this.setState({ data });
+      });
   }
 
   render() {
@@ -36,7 +87,7 @@ class App extends Component {
           To get started, edit <code>src/App.js</code> and save to reload.
         </p>
         <p>
-          { this.state.text }
+          { JSON.stringify(this.state.data) }
         </p>
       </div>
     );

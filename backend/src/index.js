@@ -49,6 +49,13 @@ async function main() {
 
     app.context.io = io;
 
+    const cursor = await r.db('graphthing').table('values').changes().run(conn);
+
+    cursor.each((err, row) => {
+        const graph = row.new_val ? row.new_val.graph : (row.old_val && row.old_val.graph);
+        io.to(`data-${graph}`).emit('update', row);
+    });
+
     io.on('connection', socket => {
         console.log('new connection', socket.id);
 
@@ -64,9 +71,14 @@ async function main() {
             ack(data);
         });
 
-        socket.on('subscribe', id => {
+        socket.on('subscribe', (id, ack) => {
             console.log(`${socket.id} subscribed to ${id}`);
-            socket.join(`data-${id}`);
+            socket.join(`data-${id}`, ack);
+        });
+
+        socket.on('unsubscribe', (id, ack) => {
+            console.log(`${socket.id} unsubscribed from ${id}`);
+            socket.leave(`data-${id}`, ack);
         });
     });
 
