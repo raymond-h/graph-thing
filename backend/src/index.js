@@ -52,6 +52,18 @@ async function main() {
     io.on('connection', socket => {
         console.log('new connection', socket.id);
 
+        socket.on('fetch', async (id, ack) => {
+            const cursor = await r.db('graphthing').table('values')
+                .filter(
+                    r.row('graph').eq(id)
+                )
+                .run(conn);
+
+            const data = await cursor.toArray();
+
+            ack(data);
+        });
+
         socket.on('subscribe', id => {
             console.log(`${socket.id} subscribed to ${id}`);
             socket.join(`data-${id}`);
