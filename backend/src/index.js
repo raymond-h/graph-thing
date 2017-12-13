@@ -7,6 +7,7 @@ import Router from 'koa-router';
 import bodyParser from 'koa-bodyparser';
 import socketIo from 'socket.io';
 import r from 'rethinkdb';
+import parseRethinkDbUrl from 'parse-rethinkdb-url';
 
 const app = new Koa();
 const router = new Router();
@@ -42,7 +43,11 @@ app
     .use(router.allowedMethods());
 
 async function main() {
-    const conn = await r.connect(process.env.RETHINKDB_HOST);
+    const conn = await r.connect(
+        (process.env.RETHINKDB_URL != null) ?
+            parseRethinkDbUrl(process.env.RETHINKDB_URL) :
+            process.env.RETHINKDB_HOST
+    );
 
     app.context.db = conn;
 

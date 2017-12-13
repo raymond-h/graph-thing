@@ -33,6 +33,7 @@
         "koa": "^2.4.1",
         "koa-bodyparser": "^4.2.0",
         "koa-router": "^7.3.0",
+        "parse-rethinkdb-url": "0.0.1",
         "rethinkdb": "^2.3.3",
         "socket.io": "^2.0.4"
     },
