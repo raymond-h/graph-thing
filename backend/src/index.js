@@ -49,13 +49,6 @@ async function main() {
 
     app.context.io = io;
 
-    const cursor = await r.db('graphthing').table('values').changes().run(conn);
-
-    cursor.each((err, row) => {
-        const graph = row.new_val ? row.new_val.graph : (row.old_val && row.old_val.graph);
-        io.to(`data-${graph}`).emit('update', row);
-    });
-
     io.on('connection', socket => {
         console.log('new connection', socket.id);
 
@@ -71,14 +64,39 @@ async function main() {
             ack(data);
         });
 
-        socket.on('subscribe', (id, ack) => {
+        socket.on('subscribe', async (id, ack) => {
             console.log(`${socket.id} subscribed to ${id}`);
-            socket.join(`data-${id}`, ack);
-        });
 
-        socket.on('unsubscribe', (id, ack) => {
-            console.log(`${socket.id} unsubscribed from ${id}`);
-            socket.leave(`data-${id}`, ack);
+            let cursor;
+
+            const unsub = async unsubId => {
+                if(unsubId !== id) {
+                    return;
+                }
+
+                console.log(`${socket.id} unsubscribed from ${id}`);
+
+                if(cursor == null) {
+                    throw new Error(`unsubscribe(id: ${id}), from: ${socket.id}: Cursor not initialized`);
+                }
+
+                await cursor.close();
+            };
+
+            socket.on('unsubscribe', (id, ack) => unsub(id).then(ack));
+            socket.on('disconnect', () => unsub(id));
+
+            cursor = await r.db('graphthing')
+                .table('values')
+                .filter({ graph: id })
+                .changes()
+                .run(conn);
+
+            cursor.each((err, row) => {
+                socket.emit('update', row);
+            });
+
+            ack();
         });
     });
 
