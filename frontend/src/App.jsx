@@ -70,16 +70,13 @@ class GraphDisplayer extends Component {
   }
 
   componentDidMount() {
-    this.socket = io({
-      path: '/api/socket.io'
-    });
-
     this.sub =
       this.propsSubj
-      .map(props => props.id)
-      .switchMap(id =>
-        stateSyncObs(this.socket, id)
-      )
+      .distinctUntilChanged()
+      .switchMap(props => {
+        console.log(props);
+        return stateSyncObs(props.socket, props.id);
+      })
       .subscribe(data => {
         this.setState({ data });
       });
@@ -122,7 +119,9 @@ class GraphDisplayer extends Component {
 class App extends Component {
   constructor(props) {
     super(props);
-    this.socket = null;
+    this.socket = io({
+      path: '/api/socket.io'
+    });
     this.state = { text: '' };
   }
 
@@ -130,10 +129,6 @@ class App extends Component {
     const res = await fetch('/api/test');
     const text = await res.text();
     this.setState({ text });
-
-    this.socket = io({
-      path: '/api/socket.io'
-    });
   }
 
   render() {
