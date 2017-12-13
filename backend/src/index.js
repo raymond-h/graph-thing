@@ -1,4 +1,6 @@
 import http from 'http';
+import dotenv from 'dotenv';
+dotenv.config();
 
 import Koa from 'koa';
 import Router from 'koa-router';
@@ -40,7 +42,7 @@ app
     .use(router.allowedMethods());
 
 async function main() {
-    const conn = await r.connect('localhost');
+    const conn = await r.connect(process.env.RETHINKDB_HOST);
 
     app.context.db = conn;
 
