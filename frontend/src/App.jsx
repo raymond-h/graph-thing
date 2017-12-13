@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import Rx from 'rxjs/Rx';
 import io from 'socket.io-client';
 
-import logo from './logo.svg';
 import './App.css';
 
 async function fetchAll(socket, id) {
@@ -57,7 +56,7 @@ class App extends Component {
     super(props);
     this.socket = null;
     this.sub = null;
-    this.state = { text: '', data: null };
+    this.state = { text: '', data: [] };
   }
 
   async componentDidMount() {
@@ -79,16 +78,24 @@ class App extends Component {
   render() {
     return (
       <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <h1 className="App-title">Welcome to React</h1>
-        </header>
-        <p className="App-intro">
-          To get started, edit <code>src/App.js</code> and save to reload.
-        </p>
-        <p>
-          { JSON.stringify(this.state.data) }
-        </p>
+        <table className="App-table">
+          <thead>
+            <tr>
+              <th>Timestamp</th>
+              <th>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+          {
+            this.state.data.map(val =>
+              <tr key={val.id}>
+                <td>{ (new Date(val.time)) + '' }</td>
+                <td>{ val.value }</td>
+              </tr>
+            )
+          }
+          </tbody>
+        </table>
       </div>
     );
   }
