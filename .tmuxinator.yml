@@ -1,0 +1,19 @@
+name: graph-thing
+root: .
+
+windows:
+  - frontend:
+      root: ./frontend
+      layout: main-horizontal
+      panes:
+        - npm start
+        - ""
+
+  - backend:
+      root: ./backend
+      layout: main-horizontal
+      panes:
+        - npm run start:dev
+        - ""
+
+  - root: ""
