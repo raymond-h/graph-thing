@@ -51,7 +51,7 @@ function dbCreateIfNotExists(r, dbNames) {
 function tableCreateIfNotExists(r, dbName, tableNames) {
     return r.expr(tableNames)
         .difference(r.db(dbName).tableList())
-        .forEach(dbName => r.db(dbName).tableCreate(dbName));
+        .forEach(tableName => r.db(dbName).tableCreate(tableName));
 }
 
 async function main() {
