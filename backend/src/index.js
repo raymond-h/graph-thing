@@ -42,6 +42,18 @@ app
     .use(router.routes())
     .use(router.allowedMethods());
 
+function dbCreateIfNotExists(r, dbNames) {
+    return r.expr(dbNames)
+        .difference(r.dbList())
+        .forEach(dbName => r.dbCreate(dbName));
+}
+
+function tableCreateIfNotExists(r, dbName, tableNames) {
+    return r.expr(tableNames)
+        .difference(r.db(dbName).tableList())
+        .forEach(dbName => r.db(dbName).tableCreate(dbName));
+}
+
 async function main() {
     const conn = await r.connect(
         (process.env.RETHINKDB_URL != null) ?
@@ -50,6 +62,9 @@ async function main() {
     );
 
     app.context.db = conn;
+
+    await dbCreateIfNotExists(r, ['graphthing']).run(conn);
+    await tableCreateIfNotExists(r, 'graphthing', ['values']).run(conn);
 
     const server = http.createServer(app.callback());
     const io = socketIo(server);
