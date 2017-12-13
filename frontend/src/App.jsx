@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { BrowserRouter, Route } from 'react-router-dom';
 import Rx from 'rxjs/Rx';
 import io from 'socket.io-client';
 
@@ -53,12 +54,76 @@ function stateSyncObs(socket, id) {
   );
 }
 
+// Props:
+//   socket: socket.io instance
+//   id: graph ID
+class GraphDisplayer extends Component {
+  constructor(props) {
+    super(props);
+
+    this.propsSubj = new Rx.BehaviorSubject(props);
+    this.state = { data: [] };
+  }
+
+  componentWillReceiveProps(nextProps) {
+    this.propsSubj.next(nextProps);
+  }
+
+  componentDidMount() {
+    this.socket = io({
+      path: '/api/socket.io'
+    });
+
+    this.sub =
+      this.propsSubj
+      .map(props => props.id)
+      .switchMap(id =>
+        stateSyncObs(this.socket, id)
+      )
+      .subscribe(data => {
+        this.setState({ data });
+      });
+  }
+
+  render() {
+    const updateUrl = `${window.location.origin}/api/update/${this.props.id}`;
+
+    return <div>
+      <LineChart
+        axes
+        grid
+        verticalGrid
+        xType={'time'}
+        datePattern={'%Q'}
+        margin={{ top: 10, bottom: 40, left: 40, right: 10 }}
+        width={1024}
+        height={400}
+        data={[
+          this.state.data.map(val => {
+            return {
+              x: Date.parse(val.time),
+              y: val.value
+            }
+          })
+        ]}
+        />
+
+      <p>
+        To update this graph, send a <code>PUSH</code> request to <code>{updateUrl}</code>
+      </p>
+      <p>
+        It accepts JSON (<code>{'{"value":5.9}'}</code>) and HTTP form (<code>value=5.9</code>) formats.
+        Keep in mind to set proper <code>Content-Type</code> header!
+      </p>
+    </div>;
+  }
+}
+
 class App extends Component {
   constructor(props) {
     super(props);
     this.socket = null;
-    this.sub = null;
-    this.state = { text: '', data: [] };
+    this.state = { text: '' };
   }
 
   async componentDidMount() {
@@ -69,36 +134,17 @@ class App extends Component {
     this.socket = io({
       path: '/api/socket.io'
     });
-
-    this.sub =
-      stateSyncObs(this.socket, 'hurr-durr')
-      .subscribe(data => {
-        this.setState({ data });
-      });
   }
 
   render() {
     return (
-      <div className="App">
-        <LineChart
-          axes
-          grid
-          verticalGrid
-          xType={'time'}
-          datePattern={'%Q'}
-          margin={{ top: 10, bottom: 100, left: 100, right: 10 }}
-          width={600}
-          height={400}
-          data={[
-            this.state.data.map(val => {
-              return {
-                x: Date.parse(val.time),
-                y: val.value
-              }
-            })
-          ]}
-          />
-      </div>
+      <BrowserRouter>
+        <div className="App">
+          <Route path="/graph/:graphId" render={props => (
+            <GraphDisplayer socket={this.socket} id={props.match.params.graphId} />
+          )} />
+        </div>
+      </BrowserRouter>
     );
   }
 }
