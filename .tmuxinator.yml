@@ -1,6 +1,9 @@
 name: graph-thing
 root: .
 
+on_project_first_start: sudo docker-compose -f backend/docker-compose.yml up -d
+on_project_stop: sudo docker-compose -f backend/docker-compose.yml down
+
 windows:
   - frontend:
       root: ./frontend
@@ -13,7 +16,7 @@ windows:
       root: ./backend
       layout: 06fe,204x52,0,0[204x31,0,0{102x31,0,0,1,101x31,103,0[101x14,103,0,6,101x16,103,15,7]},204x20,0,32,4]
       panes:
-        - 'sudo docker-compose up -d; npm run start:dev; sudo docker-compose down'
+        - 'npm run start:dev'
         - 'npm run watch:lint:fix'
         - 'npm run watch:test'
         - ''
