@@ -13,7 +13,7 @@ windows:
       root: ./backend
       layout: 06fe,204x52,0,0[204x31,0,0{102x31,0,0,1,101x31,103,0[101x14,103,0,6,101x16,103,15,7]},204x20,0,32,4]
       panes:
-        - 'npm run start:dev'
+        - 'sudo docker-compose up -d; npm run start:dev; sudo docker-compose down'
         - 'npm run watch:lint:fix'
         - 'npm run watch:test'
         - ''
