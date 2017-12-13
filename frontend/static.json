@@ -1,5 +1,13 @@
 {
 	"root": "build/",
+	"routes": {
+		"asset-manifest.json": "asset-manifest.json",
+		"favicon.ico": "favicon.ico",
+		"manifest.json": "manifest.json",
+		"service-worker.js": "service-worker.js",
+		"/static/*": "/static/",
+		"/**": "index.html"
+	},
 	"proxies": {
 		"/api/": {
 			"origin": "${BACKEND_URL}"
