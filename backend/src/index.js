@@ -54,9 +54,8 @@ async function main() {
 
         socket.on('fetch', async (id, ack) => {
             const cursor = await r.db('graphthing').table('values')
-                .filter(
-                    r.row('graph').eq(id)
-                )
+                .filter({ graph: id })
+                .orderBy('time')
                 .run(conn);
 
             const data = await cursor.toArray();

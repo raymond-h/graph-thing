@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import Rx from 'rxjs/Rx';
 import io from 'socket.io-client';
 
+import { LineChart } from 'react-easy-chart';
+
 import './App.css';
 
 async function fetchAll(socket, id) {
@@ -78,24 +80,24 @@ class App extends Component {
   render() {
     return (
       <div className="App">
-        <table className="App-table">
-          <thead>
-            <tr>
-              <th>Timestamp</th>
-              <th>Value</th>
-            </tr>
-          </thead>
-          <tbody>
-          {
-            this.state.data.map(val =>
-              <tr key={val.id}>
-                <td>{ (new Date(val.time)) + '' }</td>
-                <td>{ val.value }</td>
-              </tr>
-            )
-          }
-          </tbody>
-        </table>
+        <LineChart
+          axes
+          grid
+          verticalGrid
+          xType={'time'}
+          datePattern={'%Q'}
+          margin={{ top: 10, bottom: 100, left: 100, right: 10 }}
+          width={600}
+          height={400}
+          data={[
+            this.state.data.map(val => {
+              return {
+                x: Date.parse(val.time),
+                y: val.value
+              }
+            })
+          ]}
+          />
       </div>
     );
   }
