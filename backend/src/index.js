@@ -8,6 +8,7 @@ import bodyParser from 'koa-bodyparser';
 import socketIo from 'socket.io';
 import r from 'rethinkdb';
 import parseRethinkDbUrl from 'parse-rethinkdb-url';
+import retry from 'retry-as-promised';
 
 const app = new Koa();
 const router = new Router();
@@ -42,6 +43,21 @@ app
     .use(router.routes())
     .use(router.allowedMethods());
 
+function rethinkDbConnectRetry(r, ...params) {
+    return retry(
+        opts => {
+            console.log(`Connecting to database, attempt #${opts.current}...`);
+            return r.connect(...params);
+        },
+        {
+            max: 10,
+            match: [
+                r.Error.ReqlDriverError
+            ]
+        }
+    );
+}
+
 function dbCreateIfNotExists(r, dbNames) {
     return r.expr(dbNames)
         .difference(r.dbList())
@@ -55,7 +71,7 @@ function tableCreateIfNotExists(r, dbName, tableNames) {
 }
 
 async function main() {
-    const conn = await r.connect(
+    const conn = await rethinkDbConnectRetry(r,
         (process.env.RETHINKDB_URL != null) ?
             parseRethinkDbUrl(process.env.RETHINKDB_URL) :
             process.env.RETHINKDB_HOST
