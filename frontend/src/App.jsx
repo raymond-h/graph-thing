@@ -7,6 +7,8 @@ import { LineChart } from 'react-easy-chart';
 
 import './App.css';
 
+import exampleData from './example-data';
+
 async function fetchAll(socket, id) {
   return new Promise(resolve => {
     socket.emit('fetch', id, resolve);
@@ -54,6 +56,27 @@ function stateSyncObs(socket, id) {
   );
 }
 
+const Graph = ({ data }) => {
+  return <LineChart
+    axes
+    grid
+    verticalGrid
+    xType={'time'}
+    datePattern={'%Q'}
+    margin={{ top: 10, bottom: 40, left: 40, right: 10 }}
+    width={1024}
+    height={400}
+    data={[
+      data.map(val => {
+        return {
+          x: Date.parse(val.time),
+          y: val.value
+        }
+      })
+    ]}
+    />;
+}
+
 // Props:
 //   socket: socket.io instance
 //   id: graph ID
@@ -86,24 +109,7 @@ class GraphDisplayer extends Component {
     const updateUrl = `${window.location.origin}/api/update/${this.props.id}`;
 
     return <div>
-      <LineChart
-        axes
-        grid
-        verticalGrid
-        xType={'time'}
-        datePattern={'%Q'}
-        margin={{ top: 10, bottom: 40, left: 40, right: 10 }}
-        width={1024}
-        height={400}
-        data={[
-          this.state.data.map(val => {
-            return {
-              x: Date.parse(val.time),
-              y: val.value
-            }
-          })
-        ]}
-        />
+      <Graph data={this.state.data} />
 
       <p>
         To update this graph, send a <code>PUSH</code> request to <code>{updateUrl}</code>
@@ -137,6 +143,10 @@ class App extends Component {
         <div className="App">
           <Route path="/graph/:graphId" render={props => (
             <GraphDisplayer socket={this.socket} id={props.match.params.graphId} />
+          )} />
+
+          <Route path="/example" render={props => (
+            <Graph data={exampleData.sort((a, b) => Date.parse(a.time) - Date.parse(b.time))} />
           )} />
         </div>
       </BrowserRouter>
