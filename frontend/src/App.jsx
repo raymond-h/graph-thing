@@ -63,7 +63,7 @@ const Graph = ({ data }) => {
     verticalGrid
     xType={'time'}
     datePattern={'%Q'}
-    margin={{ top: 10, bottom: 40, left: 40, right: 10 }}
+    margin={{ top: 10, bottom: 40, left: 100, right: 10 }}
     width={1024}
     height={400}
     data={[
